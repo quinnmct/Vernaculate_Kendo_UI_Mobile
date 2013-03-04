@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <meta charset="utf-8" />
+        <script src="cordova.js"></script>
+        <script src="kendo/js/jquery.min.js"></script>
+        <script src="kendo/js/kendo.mobile.min.js"></script>
+        <script src="http://maps.google.com/maps/api/js?sensor=true"></script>
+        <script src="scripts/hello-world.js"></script>
+
+        <link href="kendo/styles/kendo.mobile.all.min.css" rel="stylesheet" />
+        <link href="styles/main.css" rel="stylesheet" />
+    </head>
+    <body>
+        <div data-role="view" id="tabstrip-home" data-title="Page Communication">
+            <h1>Welcome!</h1>
+            <p>
+                Short test to have two pages communicate with each other. 
+                Select languages on the 'Selection' page, then press the button 
+                on the 'Results' page to see your selections appear.
+            </p>
+        </div>
+
+        <div data-role="layout" data-id="mobile-tabstrip">
+            <header data-role="header">
+                <div data-role="navbar">
+                    <span data-role="view-title"></span>
+                </div>
+            </header>
+
+            <div data-role="footer">
+                <div data-role="tabstrip">
+                    <a href="#tabstrip-home" data-icon="home">Home</a>
+                    <a href="#tabstrip-checkbox" data-icon="settings">Selection</a>
+                    <a href="#tabstrip-results" data-icon="play">Result</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- SELECT LANGUAGES -->
+          <div data-role="view" id="tabstrip-checkbox" data-title="Select Languages:">
+             <div data-role="fieldcontain">
+                <fieldset data-role="controlgroup">
+	               <legend>Select languages you would like displayed:</legend>
+	               <label><input type="checkbox" name="English" id="en" value="en" />English</label><br/>
+	               <label><input type="checkbox" name="French" id="fr" value="fr" />French</label><br/>
+                   <label><input type="checkbox" name="Spanish" id="es" value="es"/>Spanish</label><br/>
+                   <label><input type="checkbox" name="Russian" id="ru" value="ru"/>Russian</label><br/>
+                   <label><input type="checkbox" name="German" id="de"  value="de"/>German</label><br/>
+                   <label><input type="checkbox" name="Japanese" id="ja"  value="ja"/>Japanese</label><br/>
+                   <label><input type="checkbox" name="Swedish" id="sv"  value="sv"/>Swedish</label><br/>
+                   <label><input type="checkbox" name="Italian" id="it" value="it"/>Italian</label><br/>
+                   <label><input type="checkbox" name="Mandarin Chinese" id="zh-Hans"  value="zh-Hans"/>Mandarin Chinese</label>
+                </fieldset>
+            </div>
+          </div>
+        
+        <!-- RESULTS -->
+        <div data-role="view" id="tabstrip-results">
+            <input type="search" name="search-mini" id="wordSearch" value="How's it going?" data-mini="true" />
+            <input type="button" id="resultButton" value="Translate!"/>
+            <ul id="result" data-role="listview"></ul>
+        </div>
+        
+        <!-- SCRIPT -->
+        <script>
+            var defaultLang = "en";
+            
+            
+            var app = new kendo.mobile.Application(document.body, { transition: "slide", layout: "mobile-tabstrip" });
+            var button = $("#resultButton").kendoMobileButton({icon: "stop"});
+            
+            //button click event obtains access key then calls 'translateThis'
+            $("#resultButton").click(function(){
+                    //obtain access key
+                    $.ajax({
+                        url:'http://localhost:56789/api/accesstoken/',
+                        success:(translateThis)
+                    });
+            });
+                         
+            function appendAnswers(response){             //this.name not working (no inside the loop)
+                     $("#result").append("<li><div class=smallFont>"+this.name+
+                "</div><div class=output>"+response+"</div></li>");
+                
+            }
+                     
+            function translateThis(admAuth){
+                $("#result").empty();//empty out the result list
+                $("fieldset input:checked").each(function(){
+                    to = this.value;
+                    text = $('#wordSearch').val();
+                    var s = document.createElement("script");
+                    s.src= "http://api.microsofttranslator.com/V2/Ajax.svc/Translate" +
+                    "?appId=Bearer "+encodeURIComponent(admAuth.access_token)+
+                    "&from=" + encodeURIComponent(defaultLang)+
+                    "&to=" + encodeURIComponent(to)+
+                    "&text=" + encodeURIComponent(text)+
+                    "&oncomplete=appendAnswers";
+                    document.body.appendChild(s);
+                });
+            }             
+        </script>
+    </body>
+</html>
