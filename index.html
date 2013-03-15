@@ -76,6 +76,16 @@
             <div id="ttsDiv"></div><!--text-to-speech result-->
         </div>
         
+        <!-- WORD VIEW -->
+        <div data-role="view" id="tabstrip-word-breakdown" data-title="Vernaculate" data-init="temp">
+            <h1>Welcome!</h1>
+            <p>
+                WORD WORD WORD DEFINITION !
+            </p>
+        </div>
+        
+        
+        
         <!-- MODAL VIEW template -->
         <div data-role="modalview" id="modal1" data-open="logTarget" style="width:250px; height:300px">
             <div id="modalText"></div><br/>     
@@ -94,46 +104,35 @@
             
             /////////  TRANSLATE METHODS ///////////
             
-            //button click event obtains access key then calls 'translateThis'
-            $("#resultButton").click(function(){
-                    $.ajax({
-                        url:'http://localhost:56789/api/accesstoken/',
-                        success:(translateThis)
-                    });
-            });
-                
+            //button click event
             //main 'translate' function; checks 'checked' checkboxes, then 
-            //calls the microsoft translation api in each language selected
-            function translateThis(admAuth){
+            //calls my TranslationAPI to do the translation
+            $("#resultButton").click(function(){
                 $("#translated").empty(); //empty out the result list
                 phraseArr.length = 0; //empty out the temp phrase list
                 phraseIndex = -1;
                 $("fieldset input:checked").each(function(){
-                    
                     var to = this.value;
                     var text = $('#wordSearch').val();
-                    var s = document.createElement("script");
-                    s.src= "http://api.microsofttranslator.com/V2/Ajax.svc/Translate" +
-                    "?appId=Bearer "+encodeURIComponent(admAuth.access_token)+
-                    "&from=" + encodeURIComponent(defaultLang)+
-                    "&to=" + encodeURIComponent(to)+
-                    "&text=" + encodeURIComponent(text)+
-                    "&oncomplete=appendAnswers";
-                    document.body.appendChild(s);
-                });
-            }
-            
-            //appends the translated phrases to 'result' list
-            function appendAnswers(response){   
-                //currentSentence = response;
-                phraseIndex+=1;
-                phraseArr[phraseIndex]=response;
-                console.log(phraseArr[phraseIndex]);
-                console.log(phraseIndex);
-                     $("#translated").append('<li><div class=t-output><a data-role="button" href="#modal1" data-rel="modalview">'+response+'</a></div></li>');
+                    //JSON object being sent; untranslated
+                    var untranslated = {"value":text, "lang":to};
+                    $.ajax({
+                      type: "POST",
+                      dataType: "json",
+                      contentType: "application/json",
+                      data: JSON.stringify(untranslated),
+                      url:"http://localhost:64600/api/translate",
+                      success:function(response){   
+                         phraseIndex+=1;
+                         phraseArr[phraseIndex]=response;
+                         $("#translated").append('<li><div class=t-output><a data-role="button"'+
+                               'href="#modal1" data-rel="modalview">'+response+'</a></div></li>');
                 
-            }
-			        
+                       }
+                    });
+                });
+            });
+                  
             ///////////TEXT - TO - SPEECH //////////////
                         
             //button click event translates text to speech (mp3)
@@ -170,16 +169,37 @@
 			}
                         
             ///////// MODAL VIEW FUNCTIONS ////////////////
-                        
-            $("#closeModal").click(function(){
+                
+            //temporarily unused 'close' button; function below closes modal view when the view 
+            //is clicked or when anything inside the view is clicked.
+            /*$("#closeModal").click(function(){
                 var modal = $("#modal1").data("kendoMobileModalView");
                 modal.close();
                 //modal.destroy();
-            });
-                        
+            });*/
+            $('#modal1').click(function(){
+                    var modal2 = $("#modal1").data("kendoMobileModalView");
+                    modal2.close();
+            }); 
+                       
+            //finds the phrase that was clicked on to open the modal 
+            //view, then parses the phrase to display each words 'definition'
             function logTarget(e){
-                $("#modalText").empty();
-                $("#modalText").append('<div style="font-size:1.6em">'+e.target.text()+'</div>');
+                var phrase = e.target.text();
+                var wordArr = phrase.split(' ');
+                 $("#modalText").empty();
+                 $("#modalText").append('<ul id="translatedWords" data-role="listview"></ul>');
+                for(i=0; i < wordArr.length; i++){
+                    //each word in here
+                         $("#translatedWords").append('<li><div class="sum" style="font-size:1.6em"><a data-role="button" data-click="temp">'+
+                                             wordArr[i]+'<br/>');
+                    
+                    
+                    $("#translatedWords").append('"definition here"</a></div></li>');
+                }       
+                         
+                //$("#modalText").empty();
+                //$("#modalText").append('<div style="font-size:1.6em">'+e.target.text()+'</div>');
             }
         </script>
         
