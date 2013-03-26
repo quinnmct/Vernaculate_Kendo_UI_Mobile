@@ -67,7 +67,7 @@
         
         <!-- RESULTS -->
         <div data-role="view" id="tabstrip-results">
-            <input type="search" name="search-mini" id="wordSearch" value="Enter your phrase here..." data-mini="true" style="width:230px"/>
+            <input type="search" name="search-mini" id="wordSearch" value="Enter your phrase here" data-mini="true" style="width:230px"/>
             <input type="button" id="resultButton" value="Translate!"/>
             
             <ul id="translated" data-role="listview"></ul><!--this is where all phrases end up-->
@@ -95,12 +95,13 @@
         <!-- JAVASCRIPT -->
         <script>
             
-            var defaultLang = "en";
-            var modalTemplate;
             var app = new kendo.mobile.Application(document.body, { transition: "slide", layout: "mobile-tabstrip" });
             var button = $("#resultButton").kendoMobileButton({icon: "stop"});
             var phraseArr = [];  //array holding temp translated phrases
             var phraseIndex;     //var to hold index of each phrase
+            var defaultLang = "en";
+            var detectedLang;
+            var modalTemplate;
             
             /////////  TRANSLATE METHODS ///////////
             
@@ -119,15 +120,17 @@
                     $.ajax({
                       type: "POST",
                       dataType: "json",
+                      data: "{}",
                       contentType: "application/json",
                       data: JSON.stringify(untranslated),
-                      url:"http://localhost:64600/api/translate",
+                      url:"http://localhost:63388/api/translate/",
                       success:function(response){   
                          phraseIndex+=1;
                          phraseArr[phraseIndex]=response;
-                         $("#translated").append('<li><div class=t-output><a data-role="button"'+
-                               'href="#modal1" data-rel="modalview">'+response+'</a></div></li>');
-                
+                         console.log("First word: "+phraseArr[phraseIndex].words[0].theWord);
+                         $("#translated").append('<li><div><a data-role="button"'+
+                               'href="#modal1" data-rel="modalview">'+response.value+'<br/>'+
+                                response.lang+'</a></div></li>');
                        }
                     });
                 });
@@ -136,7 +139,8 @@
             ///////////TEXT - TO - SPEECH //////////////
                         
             //button click event translates text to speech (mp3)
-            $("#ttsButton").click(function(){
+            $("#ttsButton").click(function(){              
+                    //console.log(phraseArr[0].words[0].theWord);             
                     var words = $('#wordSearch').val();
                     //ajax to tts-api.com
                     $.ajax({
@@ -169,7 +173,6 @@
 			}
                         
             ///////// MODAL VIEW FUNCTIONS ////////////////
-                
             //temporarily unused 'close' button; function below closes modal view when the view 
             //is clicked or when anything inside the view is clicked.
             /*$("#closeModal").click(function(){
@@ -185,21 +188,19 @@
             //finds the phrase that was clicked on to open the modal 
             //view, then parses the phrase to display each words 'definition'
             function logTarget(e){
-                var phrase = e.target.text();
-                var wordArr = phrase.split(' ');
-                 $("#modalText").empty();
-                 $("#modalText").append('<ul id="translatedWords" data-role="listview"></ul>');
-                for(i=0; i < wordArr.length; i++){
-                    //each word in here
-                         $("#translatedWords").append('<li><div class="sum" style="font-size:1.6em"><a data-role="button" data-click="temp">'+
-                                             wordArr[i]+'<br/>');
-                    
-                    
-                    $("#translatedWords").append('"definition here"</a></div></li>');
-                }       
-                         
-                //$("#modalText").empty();
-                //$("#modalText").append('<div style="font-size:1.6em">'+e.target.text()+'</div>');
+                var index = $('#translated li div a').index(e.target);
+                console.log(index);
+                $("#modalText").empty();
+                $("#modalText").append('<ul id="translatedWords" data-role="listview"></ul>');
+               
+                          //phraseArr[phraseIndex].words[0].theWord
+                          //THIS WILL NOT WORK with certain characters (ex. japanese) which don't have spaces between them.
+                          for(i=0; i < phraseArr[index].words.length; i++){
+                            //each word in here
+                            $("#translatedWords").append('<li><div class="sum" style="font-size:1.6em">'+
+                              '<a data-role="button" data-click="temp">'+phraseArr[index].words[i].theWord+'<br/>');
+                            $("#translatedWords").append(phraseArr[index].words[i].definition+'</a></div></li>');
+                          }
             }
         </script>
         
