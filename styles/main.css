@@ -3,37 +3,40 @@ body
     font: Arial, sans-serif;
 }
 
-.buttonArea,
-.footerText,
-#geoLocationContainer,
-#helloWorldInput,
-#helloWorldText
+.menuButtons
 {
-    text-align: center;
-}
-
-#txtName
-{
-    border: 1px solid #AAA;
-    border-radius: 15px;
-    position:static;
-    margin-left: 1em;
-    margin-top: 0.3em;
-    margin-bottom: 0.3em;
-    background:white;
-    color: black;
-    padding: 7px;
-}
-
-
-.smallFont
-{
-    font-size: .8em;
+display: block;
+width: 180px;
+margin: 0 auto;
     
 }
-
-.output
+#translated li 
 {
-    float:right;
-    font-size: 1.2em;
+    border-style:ridge;
+    border-width:4px;
+    border-color:#B26B00;
 }
+.floatLeft{
+    float:left;
+    font-size:1.2em;
+    height:9px;
+    margin: 12px;
+}
+.floatRight{
+    float:right;
+    height:15px;
+    margin: 12px;
+}
+#translated li div div
+{
+    background-color: rgba(120,155,200,.8);
+    
+    
+}
+.appendedButton
+{
+    height:10px;
+    margin: -3px;
+    padding: 4px;
+}
+
