@@ -7,9 +7,9 @@
         <script src="kendo/js/jquery.min.js"></script>
         <script src="kendo/js/kendo.mobile.min.js"></script>
         <script src="http://maps.google.com/maps/api/js?sensor=true"></script>
-        <script src="scripts/hello-world.js"></script>
         <link href="kendo/styles/kendo.mobile.all.min.css" rel="stylesheet" />
         <link href="styles/main.css" rel="stylesheet" />
+       <script src="scripts/soundmanager2.js"></script>
     </head>
     <body>
         <div data-role="view" id="tabstrip-home">
@@ -17,11 +17,11 @@
             <p>
                 Vernaculate allows you to translate phrases into multiple languages at once, 
                 enabling you to compare the sounds and structure of each specific language.
-            </p><div>
+            </p>
             <a class="menuButtons" data-role="button" href="">Select Default Language</a><br/>
             <a class="menuButtons" data-role="button" href="">Settings</a><br/>
-            <a class="menuButtons" data-role="button" href="">About</a><br/></div>
-            
+            <a class="menuButtons" data-role="button" href="">About</a><br/>
+            <div id="rrr"></div>
         </div>
 
         <div data-role="view" id="tab-vernaculate">
@@ -45,31 +45,35 @@
                  <div data-role="fieldcontain">
                   <fieldset data-role="controlgroup">
 	               <legend>Select languages you would like displayed:</legend>
-                   <label><input type="checkbox" value="ar"/>Arabic</label><br/>
-                   <label><input type="checkbox" value="bg"/>Bulgarian</label><br/>
+                   <label><input type="checkbox" value="ar"/>Arabic</label><br/><!--=-->
+                   <label><input type="checkbox" value="bg"/>Bulgarian</label><br/><!--=-->
+                   <label><input type="checkbox" value="ca"/>Catalan</label><br/> 
+                   <label><input type="checkbox" value="zh-cn"/>Chinese</label><br/>  
                    <label><input type="checkbox" value="da"/>Danish</label><br/>   
                    <label><input type="checkbox" value="nl"/>Dutch</label><br/>
 	               <label><input type="checkbox" value="en"/>English</label><br/>
+                   <label><input type="checkbox" value="fi"/>Finnish</label><br/>
 	               <label><input type="checkbox" value="fr"/>French</label><br/>
                    <label><input type="checkbox" value="de"/>German</label><br/>
-                   <label><input type="checkbox" value="hi"/>Hindi</label><br/>
+                   <label><input type="checkbox" value="hi"/>Hindi</label><br/><!--=-->
                    <label><input type="checkbox" value="it"/>Italian</label><br/>
                    <label><input type="checkbox" value="ja"/>Japanese</label><br/>
                    <label><input type="checkbox" value="ko"/>Korean</label><br/>
+                   <label><input type="checkbox" value="no"/>Norwegian</label><br/>
+                   <label><input type="checkbox" value="pl"/>Polish</label><br/>
                    <label><input type="checkbox" value="pt"/>Portuguese</label><br/>
                    <label><input type="checkbox" value="ru"/>Russian</label><br/>
                    <label><input type="checkbox" value="es"/>Spanish</label><br/>
                    <label><input type="checkbox" value="sv"/>Swedish</label><br/>
-                   <label><input type="checkbox" value="th"/>Thai</label><br/>
-                   <label><input type="checkbox" value="tr"/>Turkish</label><br/>
+                   <label><input type="checkbox" value="th"/>Thai</label><br/><!--=-->
+                   <label><input type="checkbox" value="tr"/>Turkish</label><br/><!--=-->
                   </fieldset>
                  </div>
                 </div>
             </div>
         </div>
 
-        
-        <div data-role="layout" data-id="mobile-tabstrip">
+        <div data-role="layout" data-id="mobile-tabstrip"><!-- footer -->
             <div data-role="footer">
                 <div data-role="tabstrip">
                     <a href="#tabstrip-home" data-icon="home">Home</a>
@@ -80,19 +84,18 @@
 
         <!-- MODAL VIEW template -->
         <div data-role="modalview" id="modal1" data-open="logTarget" style="width:250px; height:300px">
-            <div id="modalText"></div><br/>     
+            <div id="fullPhrase"></div><div id="currentLang"></div>
+            <div id="modalText"></div><br/> 
+            <input type="button" id="textToSpeechButton" value="speak"/>
             <input type="button" value="Close" id="closeModal"/><br/>
         </div>
         
         <script>
             var app = new kendo.mobile.Application(document.body, { transition: "slide", layout: "mobile-tabstrip" });
+            /////////  TRANSLATE METHODS ///////////
             var phraseArr = [];  //array holding temp translated phrases
             var phraseIndex;     //var to hold index of each phrase
             var defaultLang = "en";
-            var detectedLang;
-            var modalTemplate;
-            
-            /////////  TRANSLATE METHODS ///////////
             
             //button click event
             //main 'translate' function; checks 'checked' checkboxes, then 
@@ -113,55 +116,83 @@
                       contentType: "application/json",
                       data: JSON.stringify(untranslated),
                       url:"http://localhost:63388/api/translate/",
-                      success:function(response){   
-                         phraseIndex+=1;
-                         phraseArr[phraseIndex]=response;
-                         console.log("First word: "+phraseArr[phraseIndex].words[0].theWord);
-                         $("#translated").append(
-                             '<li><div style="background-color: rgba(120,155,200,0.5);"><p class="floatLeft">'+ response.langName
-                            +'</p><p class="floatRight"><a class="appendedButton" href="#modal1" data-rel="modalview">define</a></p><div style="clear: both;">'
-                            +'</div></div><div style="font-size:1.8em;">'+ response.value + '</div></li><br/>');
-                         button = $(".appendedButton").kendoMobileButton(); 
-                       }
+                      success:(addEachPhrase)
                     });
                 });
                            
             });
-            
-            
-            
-            
-            
+            //add each phrase to the list, formatted accordingly
+            function addEachPhrase(response){   
+                phraseIndex+=1;
+                phraseArr[phraseIndex]=response;
+                $("#translated").append('<li><div style="background-color: rgba(120,155,200,0.5);"><p class="floatLeft">'
+                +response.langName+'</p><p class="floatRight"><a class="appendedButton" href="#modal1" data-rel="modalview">'
+                +'define</a></p><div style="clear: both;"></div></div><div style="font-size:1.8em;">'+ response.value + '</div></li><br/>');
+                button = $(".appendedButton").kendoMobileButton(); 
+            }                    
+                                
+            ///////////TEXT - TO - SPEECH //////////////
+            var mySound;
+            $("#textToSpeechButton").click(function(e){ 
+                 $.ajax({
+                    type: "GET",
+                    url:"http://localhost:63388/api/translate/",
+                    success:(getTTS)
+                 });
+            });  
+            //first_response holds access token                    
+            function getTTS(first_response) {
+                 var s = document.createElement("script");
+                 s.src = "http://api.microsofttranslator.com/V2/Ajax.svc/Speak?appId=Bearer " 
+                       + encodeURIComponent(first_response.access_token) + "&text="
+                       + $("#fullPhrase").text()+"&language="+$("#currentLang").text()+"&format=audio/mp3";
+                 $.ajax({
+                       url: s.src,
+                       success:function(response){
+                         //response.replace prepares returned URL for passing into sound manager
+                         response = response.replace(/\\/g, ""); //remove all \ characters
+                         response = response.replace(/"/g, '');  //remove " from beginning and end 
+                         soundManage(response);    
+                       }
+                 });
+			}  
+            function soundManage(response) {
+               soundManager.setup({
+                 url: 'soundmanager2.swf',
+                 onready: function() {
+                    // Ready to use; soundManager.createSound() etc. can now be called.
+                    soundManager.destroySound('aSound');     
+                    mySound = soundManager.createSound({
+                        id:'aSound',
+                        url: response
+                    });
+                    mySound.play();       
+                 }
+              });     
+            }           
+			
             ///////// MODAL VIEW FUNCTIONS ////////////////
-            //temporarily unused 'close' button; function below closes modal view when the view 
-            //is clicked or when anything inside the view is clicked.
-            /*$("#closeModal").click(function(){
+            $("#closeModal").click(function(){
                 var modal = $("#modal1").data("kendoMobileModalView");
                 modal.close();
-                //modal.destroy();
-            });*/
-            $('#modal1').click(function(){
-                    var modal2 = $("#modal1").data("kendoMobileModalView");
-                    modal2.close();
-            }); 
+            });
                        
-            //finds the phrase that was clicked on to open the modal 
-            //view, then parses the phrase to display each words 'definition'
+            //finds the phrase that was clicked on to open the modal view
             function logTarget(e){
-                var index = $('#translated li div a').index(e.target);
-                console.log("thissss: "+index);
-                $("#modalText").empty();
+                $("#modalText").empty(); $("#fullPhrase").empty(); $("#currentLang").empty();
+                //receives index of current selected phrase
+                var index = $('#translated li div a').index(e.target); 
+                $("#fullPhrase").append('<h2>'+phraseArr[index].value+'</h2>');
+                $("#currentLang").append(phraseArr[index].lang);
                 $("#modalText").append('<ul id="translatedWords" data-role="listview"></ul>');
-               
-                          //phraseArr[phraseIndex].words[0].theWord
-                          //THIS WILL NOT WORK with certain characters (ex. japanese) which don't have spaces between them.
-                          for(i=0; i < phraseArr[index].words.length; i++){
-                            //each word in here
-                            $("#translatedWords").append('<li><div class="sum" style="font-size:1.6em">'+
-                              '<a data-role="button" data-click="temp">'+phraseArr[index].words[i].theWord+'<br/>');
-                            $("#translatedWords").append(phraseArr[index].words[i].definition+'</a></div></li>');
-                          }
-            }
+                //THIS WILL NOT WORK with certain characters (ex. japanese) which don't have spaces between them.
+                for(i=0; i < phraseArr[index].words.length; i++){
+                     //each word in here
+                     $("#translatedWords").append('<li><div class="sum" style="font-size:1.6em">'+
+                       '<a data-role="button" data-click="temp">'+phraseArr[index].words[i].theWord+'<br/>');
+                     $("#translatedWords").append(phraseArr[index].words[i].definition+'</a></div></li>');
+                }
+            }            
         </script>
     </body>
 </html>
