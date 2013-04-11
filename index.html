@@ -92,7 +92,6 @@
                       <div data-align="left" id="fullPhrase"></div>
                  </div> 
                </div>
-             
            </div>
            <!-- navbar outside of header is places on top of modal view -->
            <div data-role="navbar"> 
@@ -101,6 +100,7 @@
            </div>
             <div id="modalText"></div><br/>                  <!-- where the phrase is broken down -->
             <div id="langCode" style="display: none;"></div> <!--stores current language code, not visible -->
+            <div id="canSpeak" style="display: none;"></div> <!-- whether or not TTS will work, not visible -->
         </div>
         
         
@@ -156,11 +156,21 @@
             });  
             //first_response holds access token                    
             function getTTS(first_response) {
-                    console.log($("#langCode").text());
+                    var textToSpeak;
+                    var langToSpeak;
+                    console.log($("#canSpeak").text());
+                    //checks to see if language is supported by TTS service
+                    if($("#canSpeak").text() == "No"){
+                        textToSpeak = $("#currentLang").text()+" is not supported by text to speech";
+                        langToSpeak = defaultLang;
+                    }else{
+                        textToSpeak = $("#fullPhrase").text();
+                        langToSpeak = $("#langCode").text();
+                    }
                  var s = document.createElement("script");
                  s.src = "http://api.microsofttranslator.com/V2/Ajax.svc/Speak?appId=Bearer " 
                        + encodeURIComponent(first_response.access_token) + "&text="
-                       + $("#fullPhrase").text()+"&language="+$("#langCode").text()+"&format=audio/mp3";
+                       + textToSpeak+"&language="+langToSpeak+"&format=audio/mp3";
                  $.ajax({
                        url: s.src,
                        success:function(response){
@@ -196,23 +206,28 @@
             //finds the phrase that was clicked on to open the modal view
             function logTarget(e){
                 //clear all data fields in the modal view
-                $("#modalText").empty(); $("#headerDiv").empty();
+                $("#modalText").empty(); $("#headerDiv").empty(); $("#canSpeak").empty();
                 $("#fullPhrase").empty(); $("#currentLang").empty(); $("#langCode").empty();
                  //console.log(phraseArr[index].langName);  
                 //receives index of current selected phrase
                 var index = $('#translated li div a').index(e.target); 
-                    console.log(index);
+                console.log(index);
                 $("#fullPhrase").append('<h2>'+phraseArr[index].value+'</h2>');
-                $("#currentLang").append(phraseArr[index].langName); $("#langCode").append(phraseArr[index].lang);
+                $("#currentLang").append(phraseArr[index].langName); $("#langCode").append(phraseArr[index].lang); 
                 $("#modalText").append('<ul id="translatedWords" data-role="listview"></ul>');
+                if(phraseArr[index].canSpeak == false){
+                    $("#canSpeak").append("No");
+                }else{
+                    $("#canSpeak").append("Yes");
+                }
                 //THIS WILL NOT WORK with certain characters (ex. japanese) which don't have spaces between them.
                 for(i=0; i < phraseArr[index].words.length; i++){
-                     //each word in here
-                    console.log(phraseArr[index].langName);
-                     $("#translatedWords").append('<li><div class="sum" style="font-size:1.6em">'+
-                       '<a data-role="button" data-click="temp">'+phraseArr[index].words[i].theWord+'<br/>');
-                     $("#translatedWords").append(phraseArr[index].words[i].definition+'</a></div></li>');
+                   //each word in here
+                   console.log(phraseArr[index].langName);
+                   $("#translatedWords").append('<li><div class="sum" style="font-size:1.6em">'+
+                   phraseArr[index].words[i].theWord+'<br/>'+phraseArr[index].words[i].definition+'</div></li>');
                 }
+                //css fixes to the header according to the phrase length
                 var height = $("#fullPhrase").height();
                 $("#navDiv").css("height",height); height += 30; $("#modalHead").css("height",height);
             }       
