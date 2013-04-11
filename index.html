@@ -83,12 +83,26 @@
         </div>
 
         <!-- MODAL VIEW template -->
-        <div data-role="modalview" id="modal1" data-open="logTarget" style="width:250px; height:300px">
-            <div id="fullPhrase"></div><div id="currentLang"></div>
-            <div id="modalText"></div><br/> 
-            <input type="button" id="textToSpeechButton" value="speak"/>
-            <input type="button" value="Close" id="closeModal"/><br/>
+        <div data-role="modalview" id="modal1" data-open="logTarget" style="width:275px; height:360px">
+           <!-- header is fixed to the top of the modal view -->
+           <div data-role="header" id="modalHead" style="background-color: rgba(120,155,200,.8);">
+               <div data-align="right" id="currentLang"></div>
+               <div id="navDiv" data-role="navbar">
+                 <div id="headerDiv">                        <!-- without clearing this div all styling is removed -->
+                      <div data-align="left" id="fullPhrase"></div>
+                 </div> 
+               </div>
+             
+           </div>
+           <!-- navbar outside of header is places on top of modal view -->
+           <div data-role="navbar"> 
+               <a data-role="button" id="textToSpeechButton" float="left">speak</a>
+               <a data-role="button" id="closeModal" float="right">Close</a>
+           </div>
+            <div id="modalText"></div><br/>                  <!-- where the phrase is broken down -->
+            <div id="langCode" style="display: none;"></div> <!--stores current language code, not visible -->
         </div>
+        
         
         <script>
             var app = new kendo.mobile.Application(document.body, { transition: "slide", layout: "mobile-tabstrip" });
@@ -115,7 +129,7 @@
                       data: "{}",
                       contentType: "application/json",
                       data: JSON.stringify(untranslated),
-                      url:"http://localhost:63388/api/translate/",
+                      url:"http://localhost:64600/api/translate/",
                       success:(addEachPhrase)
                     });
                 });
@@ -136,22 +150,24 @@
             $("#textToSpeechButton").click(function(e){ 
                  $.ajax({
                     type: "GET",
-                    url:"http://localhost:63388/api/translate/",
+                    url:"http://localhost:64600/api/translate/",
                     success:(getTTS)
                  });
             });  
             //first_response holds access token                    
             function getTTS(first_response) {
+                    console.log($("#langCode").text());
                  var s = document.createElement("script");
                  s.src = "http://api.microsofttranslator.com/V2/Ajax.svc/Speak?appId=Bearer " 
                        + encodeURIComponent(first_response.access_token) + "&text="
-                       + $("#fullPhrase").text()+"&language="+$("#currentLang").text()+"&format=audio/mp3";
+                       + $("#fullPhrase").text()+"&language="+$("#langCode").text()+"&format=audio/mp3";
                  $.ajax({
                        url: s.src,
                        success:function(response){
                          //response.replace prepares returned URL for passing into sound manager
                          response = response.replace(/\\/g, ""); //remove all \ characters
                          response = response.replace(/"/g, '');  //remove " from beginning and end 
+                         //console.log("HHHHHH:"+response);
                          soundManage(response);    
                        }
                  });
@@ -179,20 +195,27 @@
                        
             //finds the phrase that was clicked on to open the modal view
             function logTarget(e){
-                $("#modalText").empty(); $("#fullPhrase").empty(); $("#currentLang").empty();
+                //clear all data fields in the modal view
+                $("#modalText").empty(); $("#headerDiv").empty();
+                $("#fullPhrase").empty(); $("#currentLang").empty(); $("#langCode").empty();
+                 //console.log(phraseArr[index].langName);  
                 //receives index of current selected phrase
                 var index = $('#translated li div a').index(e.target); 
+                    console.log(index);
                 $("#fullPhrase").append('<h2>'+phraseArr[index].value+'</h2>');
-                $("#currentLang").append(phraseArr[index].lang);
+                $("#currentLang").append(phraseArr[index].langName); $("#langCode").append(phraseArr[index].lang);
                 $("#modalText").append('<ul id="translatedWords" data-role="listview"></ul>');
                 //THIS WILL NOT WORK with certain characters (ex. japanese) which don't have spaces between them.
                 for(i=0; i < phraseArr[index].words.length; i++){
                      //each word in here
+                    console.log(phraseArr[index].langName);
                      $("#translatedWords").append('<li><div class="sum" style="font-size:1.6em">'+
                        '<a data-role="button" data-click="temp">'+phraseArr[index].words[i].theWord+'<br/>');
                      $("#translatedWords").append(phraseArr[index].words[i].definition+'</a></div></li>');
                 }
-            }            
+                var height = $("#fullPhrase").height();
+                $("#navDiv").css("height",height); height += 30; $("#modalHead").css("height",height);
+            }       
         </script>
     </body>
 </html>
