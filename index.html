@@ -19,8 +19,8 @@
                 enabling you to compare the sounds and structure of each specific language.
             </p>
             <a class="menuButtons" data-role="button" href="">Select Default Language</a><br/>
-            <a class="menuButtons" data-role="button" href="">Settings</a><br/>
-            <a class="menuButtons" data-role="button" href="">About</a><br/>
+            <a class="menuButtons" data-role="button" href="#tabstrip-instructions">Instructions</a><br/>
+            <a class="menuButtons" data-role="button" href="#tabstrip-about">About</a><br/>
             <div id="rrr"></div>
         </div>
 
@@ -45,8 +45,8 @@
                  <div data-role="fieldcontain">
                   <fieldset data-role="controlgroup">
 	               <legend>Select languages you would like displayed:</legend>
-                   <label><input type="checkbox" value="ar"/>Arabic</label><br/><!--=-->
-                   <label><input type="checkbox" value="bg"/>Bulgarian</label><br/><!--=-->
+                   <label><input type="checkbox" value="ar"/>Arabic</label><br/>
+                   <label><input type="checkbox" value="bg"/>Bulgarian</label><br/>
                    <label><input type="checkbox" value="ca"/>Catalan</label><br/> 
                    <label><input type="checkbox" value="zh-cn"/>Chinese</label><br/>  
                    <label><input type="checkbox" value="da"/>Danish</label><br/>   
@@ -55,7 +55,7 @@
                    <label><input type="checkbox" value="fi"/>Finnish</label><br/>
 	               <label><input type="checkbox" value="fr"/>French</label><br/>
                    <label><input type="checkbox" value="de"/>German</label><br/>
-                   <label><input type="checkbox" value="hi"/>Hindi</label><br/><!--=-->
+                   <label><input type="checkbox" value="hi"/>Hindi</label><br/>
                    <label><input type="checkbox" value="it"/>Italian</label><br/>
                    <label><input type="checkbox" value="ja"/>Japanese</label><br/>
                    <label><input type="checkbox" value="ko"/>Korean</label><br/>
@@ -65,14 +65,39 @@
                    <label><input type="checkbox" value="ru"/>Russian</label><br/>
                    <label><input type="checkbox" value="es"/>Spanish</label><br/>
                    <label><input type="checkbox" value="sv"/>Swedish</label><br/>
-                   <label><input type="checkbox" value="th"/>Thai</label><br/><!--=-->
-                   <label><input type="checkbox" value="tr"/>Turkish</label><br/><!--=-->
+                   <label><input type="checkbox" value="th"/>Thai</label><br/>
+                   <label><input type="checkbox" value="tr"/>Turkish</label><br/>
                   </fieldset>
                  </div>
                 </div>
             </div>
         </div>
 
+        <div data-role="view" id="tabstrip-about">
+            <h1 style="text-align:center">About Vernaculate</h1><br/><br/>
+            <p align="center" style="font-size:1.2em;">
+                Vernaculate was written by Quinn McTiernan, an intern at Telerik and a student 
+                of Computer Science at Wentworth Institute of Technology. <br/>
+                Vernaculate was written in HTML5 & Javascript using Telerik products: <br/>
+                      <img style="width:200px; height:auto;" src="http://a0.twimg.com/profile_images/1514396238/KendoUI-Figure.png"><br/>
+                    -<a href="http://www.kendoui.com/mobile.aspx">Kendo UI Mobile</a><br/>
+                      <img style="height:100px; width:auto;" src="http://ww1.prweb.com/prfiles/2012/10/21/10542759/gI_94658_Icenium%20logo.png"><br/>
+                    -<a href="http://www.icenium.com/">Icenium</a>
+            </p>
+        </div>
+        <div data-role="view" id="tabstrip-instructions">
+            <h1 style="text-align:center">Instructions</h1><br/><br/>
+            <p align="center" style="font-size:1.2em;">
+                Vernaculate was written by Quinn McTiernan, an intern at Telerik and a student 
+                of Computer Science at Wentworth Institute of Technology. <br/>
+                Vernaculate was written in HTML5 & Javascript using Telerik products: <br/>
+                      <img style="width:200px; height:auto;" src="http://a0.twimg.com/profile_images/1514396238/KendoUI-Figure.png"><br/>
+                    -<a href="http://www.kendoui.com/mobile.aspx">Kendo UI Mobile</a><br/>
+                      <img style="height:100px; width:auto;" src="http://ww1.prweb.com/prfiles/2012/10/21/10542759/gI_94658_Icenium%20logo.png"><br/>
+                    -<a href="http://www.icenium.com/">Icenium</a>
+            </p>
+        </div>
+                          
         <div data-role="layout" data-id="mobile-tabstrip"><!-- footer -->
             <div data-role="footer">
                 <div data-role="tabstrip">
@@ -83,7 +108,7 @@
         </div>
 
         <!-- MODAL VIEW template -->
-        <div data-role="modalview" id="modal1" data-open="logTarget" style="width:275px; height:360px">
+        <div data-role="modalview" id="modal1" data-open="modalLogTarget" style="width:275px; height:380px">
            <!-- header is fixed to the top of the modal view -->
            <div data-role="header" id="modalHead" style="background-color: rgba(120,155,200,.8);">
                <div data-align="right" id="currentLang"></div>
@@ -94,9 +119,11 @@
                </div>
            </div>
            <!-- navbar outside of header is places on top of modal view -->
-           <div data-role="navbar"> 
-               <a data-role="button" id="textToSpeechButton" float="left">speak</a>
-               <a data-role="button" id="closeModal" float="right">Close</a>
+           <div data-role="footer">
+             <div data-role="navbar"> 
+               <a data-role="button" class="modalButton" id="textToSpeechButton" float="left">Speak</a>
+               <a data-role="button" class="modalButton" id="closeModal" float="right">Close</a>
+             </div>
            </div>
             <div id="modalText"></div><br/>                  <!-- where the phrase is broken down -->
             <div id="langCode" style="display: none;"></div> <!--stores current language code, not visible -->
@@ -204,7 +231,7 @@
             });
                        
             //finds the phrase that was clicked on to open the modal view
-            function logTarget(e){
+            function modalLogTarget(e){
                 //clear all data fields in the modal view
                 $("#modalText").empty(); $("#headerDiv").empty(); $("#canSpeak").empty();
                 $("#fullPhrase").empty(); $("#currentLang").empty(); $("#langCode").empty();
@@ -224,8 +251,9 @@
                 for(i=0; i < phraseArr[index].words.length; i++){
                    //each word in here
                    console.log(phraseArr[index].langName);
-                   $("#translatedWords").append('<li><div class="sum" style="font-size:1.6em">'+
-                   phraseArr[index].words[i].theWord+'<br/>'+phraseArr[index].words[i].definition+'</div></li>');
+                   $("#translatedWords").append('<li><div class="wordDiv">'+
+                      phraseArr[index].words[i].theWord+':</div><div class="definitionDiv">'
+                     +phraseArr[index].words[i].definition+'</div><br/></li>');
                 }
                 //css fixes to the header according to the phrase length
                 var height = $("#fullPhrase").height();
