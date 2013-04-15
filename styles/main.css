@@ -47,6 +47,21 @@ margin: 0 auto;
     margin:10;
 }
 
+.wordDiv{
+    font-size:2em;
+    color: rgb(128, 67, 0);
+}
+.definitionDiv{
+    font-size:1.25em;
+}
+.modalButton{
+    width:95px;
+}
+img{
+    width:300px;
+    height:200px;
+}
+
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 .km-ios .km-view .km-content {
