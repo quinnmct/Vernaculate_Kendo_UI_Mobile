@@ -18,10 +18,23 @@
                 Vernaculate allows you to translate phrases into multiple languages at once, 
                 enabling you to compare the sounds and structure of each specific language.
             </p>
-            <a class="menuButtons" data-role="button" href="">Select Default Language</a><br/>
+            <a class="menuButtons" data-role="button" data-rel="popover" href="#default-lang">Select Default Language</a><br/>
             <a class="menuButtons" data-role="button" href="#tabstrip-instructions">Instructions</a><br/>
             <a class="menuButtons" data-role="button" href="#tabstrip-about">About</a><br/>
-            <div id="rrr"></div>
+            <div id="default-lang" data-role="popover" ><!-- popover containing languages -->
+                <div data-role="view" >
+                 <div data-role="fieldcontain">
+                  <fieldset data-role="controlgroup">
+	               <legend>Select default language:</legend>
+	               <input name="defaultLang" type="radio" value="en"/>English<br/>
+	               <input name="defaultLang" type="radio" value="fr"/>French<br/>
+                   <input name="defaultLang" type="radio" value="de"/>German<br/>
+                   <input name="defaultLang" type="radio" value="it"/>Italian<br/>
+                   <input name="defaultLang" type="radio" value="ja"/>Japanese<br/>
+                  </fieldset>
+                 </div>
+                </div>
+            </div>
         </div>
 
         <div data-role="view" id="tab-vernaculate">
@@ -29,7 +42,7 @@
                 <div data-role="navbar">
                     <a data-role="button" data-align="left" data-icon="globe"
                        data-rel="popover" href="#pop-langs" style="padding:-25px;">語</a>
-                  <input type="text" style="width: 11em; height: 30px; padding:2px;" 
+                  <input type="text" style="float:center, height: 30px; padding:2px;" 
                   value="Enter your phrase here" data-align="left" id="wordSearch"/>
                   <a data-role="button" data-align="right" id="searchButton">Search</a>
                 </div>
@@ -42,7 +55,7 @@
             
             <div id="pop-langs" data-role="popover"><!-- popover containing languages -->
                 <div data-role="view">
-                 <div data-role="fieldcontain">
+                 <div data-role="fieldcontain" id="langSelections">
                   <fieldset data-role="controlgroup">
 	               <legend>Select languages you would like displayed:</legend>
                    <label><input type="checkbox" value="ar"/>Arabic</label><br/>
@@ -74,12 +87,12 @@
         </div>
 
         <div data-role="view" id="tabstrip-about">
-            <h1 style="text-align:center">About Vernaculate</h1><br/><br/>
+            <h1 style="text-align:center">About Vernaculate</h1><br/>
             <p align="center" style="font-size:1.2em;">
                 Vernaculate was written by Quinn McTiernan, an intern at Telerik and a student 
                 of Computer Science at Wentworth Institute of Technology. <br/>
                 Vernaculate was written in HTML5 & Javascript using Telerik products: <br/>
-                      <img style="width:200px; height:auto;" src="http://a0.twimg.com/profile_images/1514396238/KendoUI-Figure.png"><br/>
+                      <img style="width:160px; height:auto;" src="http://a0.twimg.com/profile_images/1514396238/KendoUI-Figure.png"><br/>
                     -<a href="http://www.kendoui.com/mobile.aspx">Kendo UI Mobile</a><br/>
                       <img style="height:100px; width:auto;" src="http://ww1.prweb.com/prfiles/2012/10/21/10542759/gI_94658_Icenium%20logo.png"><br/>
                     -<a href="http://www.icenium.com/">Icenium</a>
@@ -88,13 +101,7 @@
         <div data-role="view" id="tabstrip-instructions">
             <h1 style="text-align:center">Instructions</h1><br/><br/>
             <p align="center" style="font-size:1.2em;">
-                Vernaculate was written by Quinn McTiernan, an intern at Telerik and a student 
-                of Computer Science at Wentworth Institute of Technology. <br/>
-                Vernaculate was written in HTML5 & Javascript using Telerik products: <br/>
-                      <img style="width:200px; height:auto;" src="http://a0.twimg.com/profile_images/1514396238/KendoUI-Figure.png"><br/>
-                    -<a href="http://www.kendoui.com/mobile.aspx">Kendo UI Mobile</a><br/>
-                      <img style="height:100px; width:auto;" src="http://ww1.prweb.com/prfiles/2012/10/21/10542759/gI_94658_Icenium%20logo.png"><br/>
-                    -<a href="http://www.icenium.com/">Icenium</a>
+                
             </p>
         </div>
                           
@@ -137,6 +144,7 @@
             var phraseArr = [];  //array holding temp translated phrases
             var phraseIndex;     //var to hold index of each phrase
             var defaultLang = "en";
+           
             
             //button click event
             //main 'translate' function; checks 'checked' checkboxes, then 
@@ -145,7 +153,7 @@
                 $("#translated").empty(); //empty out the result list
                 phraseArr.length = 0; //empty out the temp phrase list
                 phraseIndex = -1;
-                $("fieldset input:checked").each(function(){
+                $("#langSelections fieldset input:checked").each(function(){
                     var to = this.value;
                     var text = $('#wordSearch').val();
                     //JSON object being sent; untranslated
@@ -156,7 +164,7 @@
                       data: "{}",
                       contentType: "application/json",
                       data: JSON.stringify(untranslated),
-                      url:"http://localhost:64600/api/translate/",
+                      url:"http://vernaculate.com/api/translate/",
                       success:(addEachPhrase)
                     });
                 });
@@ -177,7 +185,7 @@
             $("#textToSpeechButton").click(function(e){ 
                  $.ajax({
                     type: "GET",
-                    url:"http://localhost:64600/api/translate/",
+                    url:"http://vernaculate.com/api/translate/",
                     success:(getTTS)
                  });
             });  
